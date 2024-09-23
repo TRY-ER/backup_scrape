@@ -1,0 +1,27 @@
+.bottom-panel{
+    position: fixed;
+    bottom: 0;
+    height: 5vh;
+    width: 100vw;
+    background-color: rgb(234, 234, 234);
+}
+
+.bottom-element-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.bottom-element-container .file-element{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-items: center;
+    padding: 0 20px;
+    height: 5vh;
+}
+
+.file-element p{
+    margin: 0px;
+    font-weight: 500;
+}

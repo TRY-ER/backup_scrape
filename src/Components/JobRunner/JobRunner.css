@@ -1,0 +1,649 @@
+
+
+.job-runner-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+}
+
+.job-runner-main-container {
+    display: flex;
+    flex-direction: row;
+    position: fixed;
+    height: 95vh;
+    width: 100vw;
+}
+
+.job-runner-left-container {
+    flex:15;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.job-batch-container {
+    display: flex;
+    flex-direction: column;
+    height: 99%;
+    width: 99%
+}
+
+.batch-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    height: 100%;
+    overflow: auto;
+    overflow-y: auto;
+}
+
+.batch-tray-component {
+    display: flex;
+    flex-direction: column;
+    flex: 0;
+}
+
+
+.batch-tray {
+    margin: 0;
+    /* padding-top: 5px; */
+    border-radius: 0 0 10px 10px;
+    /* transform: translateY(-10px); */
+    z-index: 1;
+    flex: 1;
+}
+
+.batch-component {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: auto;
+    padding: 0px 10px;
+    margin: 2px;
+    border-radius: 10px;
+    z-index: 2;
+    position: relative;
+    overflow: hidden;
+    background-color: rgb(227, 227, 227);
+    cursor: pointer;
+}
+
+.batch-component .current-progress {
+    width: 100%;
+}
+
+.batch-component.Stopped {
+    background-color: rgb(253, 81, 81);
+}
+
+.batch-component.Pending {
+    background-color: rgb(213, 213, 213);
+}
+
+.batch-component.Running {
+    background-color: rgb(242, 242, 161);
+}
+
+.batch-component.Completed {
+    background-color: rgb(175, 254, 175);
+}
+
+.batch-component.Running::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -0%;
+    /* Start the line from outside the container */
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.536), rgba(0, 0, 0, 0));
+    /* Faded line effect */
+    animation: loadingLine 2s infinite;
+    /* Apply the animation */
+}
+
+@keyframes loadingLine {
+    0% {
+        left: -50%;
+    }
+
+    50% {
+        left: 100%;
+        /* Move the line across the div */
+    }
+
+    100% {
+        left: 100%;
+        /* Keep it hidden outside the container */
+    }
+}
+
+.batch-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.batch-actions button {
+    padding: 7px;
+    border: none;
+    border-radius: 10px;
+}
+
+.job-runner-right-container {
+    display: flex;
+    flex-direction: row;
+    flex: 4.5;
+}
+
+.job-runner-right-container .right-main-container {
+    flex: 9;
+    display: flex;
+    flex-direction: column;
+}
+
+.job-runner-right-container .right-tab-container {
+    flex: 1;
+    background-color: rgb(212, 212, 212);
+}
+
+.tab-logo-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 5px;
+    gap: 10px;
+}
+
+.tab-logo-container img {
+    background-color: white;
+    padding: 2px;
+    height: 3vh;
+    cursor: pointer;
+}
+
+.job-runner-bottom-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    height: 5vh;
+    width: 100vw;
+}
+
+.section-number {
+    font-size: 0.9rem !important;
+    font-weight: 800;
+}
+
+.job-runner-bottom-container .section-text {
+    font-size: 0.6rem !important;
+}
+
+.cr-text {
+    font-size: 0.6rem !important;
+}
+
+.job-runner-bottom-container .left-bottom-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 15;
+    justify-content: space-between;
+    background-color: rgb(227, 227, 227);
+    border-radius: 10px;
+}
+
+.job-runner-bottom-container .status-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(227, 227, 227);
+    border-radius: 10px;
+    flex: 4.5;
+    margin: 7px;
+    /* padding: 0 5px; */
+}
+
+.right-component {
+    display: flex;
+    flex-direction: column;
+}
+
+.right-tabs {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.right-tabs button {
+    flex: 1;
+    text-align: center;
+    padding: 3px 0;
+    border: none;
+    border-radius: 2px 2px 0 0;
+    font-weight: 600;
+    background-color: white;
+}
+
+
+.right-tabs button:hover {
+    background-color: rgb(223, 223, 223);
+    color: black;
+}
+
+.right-tab-main {
+    padding: 13px 5px;
+    overflow-y: auto;
+    background-color: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.checkbox-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.start-btn {
+    background-color: green;
+    border: none;
+    padding: 10px;
+    width: 100px;
+    border-radius: 10px;
+    color: white;
+}
+
+.number-status-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0;
+}
+
+.number-status-subsection {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+    gap: 5px;
+    margin: 2px 0;
+    align-items: center;
+    border-radius: 8px;
+    border: solid 1px gray;
+    padding: 3px 5px;
+    background-color: white;
+    flex: 1;
+}
+
+.number-status-subsection p {
+    margin: 1px !important;
+}
+
+.number-status-subsection .section-number {
+    background-color: rgba(128, 128, 128, 0.517);
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.batch-progress-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.current-batch-progress {
+    display: flex;
+    flex-direction: column;
+}
+
+.batch-progress-details p, .batch-time-details p{
+    margin: 7px !important;
+}
+
+.batch-progress-details,
+.batch-time-details {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.batch-progress-bar {
+    margin: 0 7px;
+    height: 5px;
+    background-color: white;
+    border-radius: 5px;
+    position: relative;
+}
+
+.batch-progress-bar-fill {
+    height: 5px;
+    background-color: green;
+    border-radius: 5px;
+    position: relative;
+    /* width: 40%; */
+}
+
+.right-tabs .active {
+    color: white;
+}
+
+.current-state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.separator {
+    height: 2px;
+    background-color: black;
+    width: 100%;
+    margin: 5px 0;
+}
+
+.pause-btn-container,
+.stop-btn-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.pause-btn,
+.stop-btn {
+    padding: 8px 20px;
+    border: none;
+    background-color: rgba(246, 29, 29, 0.529);
+    border-radius: 5px;
+    width: 100px;
+    font-weight: 600;
+}
+
+.stop-btn {
+    background-color: red;
+    color: white;
+}
+
+.job-redir,
+.export-btn {
+    padding: 8px 20px;
+    border: none;
+    background-color: rgba(6, 201, 255, 0.529);
+    border-radius: 5px;
+    width: 100px;
+    font-weight: 600;
+}
+
+.tick-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px !important;
+}
+
+.warn-text {
+    color: red
+}
+
+.export-btn {
+    background-color: blue;
+    color: white;
+    width: auto;
+}
+
+.tab-active {
+    filter: invert(100%);
+}
+
+.console-content {
+    display: flex;
+    flex-direction: column;
+    border: solid 10px gray;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.console-header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 5px;
+    background-color: gray;
+    color: white;
+}
+
+.console-log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: left;
+    text-align: left;
+    margin: 10px 10px;
+    height: 100%;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.console-log-container p {
+    margin: 0;
+    padding: 0;
+    /* Set width to 2% of the viewport width */
+    word-wrap: break-word;
+    /* Break words to fit the container */
+    word-break: break-all;
+    /* Break long words if necessary */
+    overflow-wrap: break-word;
+    /* Handle overflow */
+    white-space: normal;
+    /* Allow line breaks */
+    /* Hide overflow */
+    text-overflow: ellipsis;
+    /* Show ellipsis for overflowed text */
+}
+
+
+.cr-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.cr-container img {
+    width: 45px;
+    margin-left: 5px;
+    height: auto;
+}
+
+.tag-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex: 1;
+    margin: 0 10px;
+    gap: 5px;
+}
+
+
+.ag-theme-quartz {
+    /* Changes the color of the grid text */
+    --ag-foreground-color: rgb(14, 68, 145);
+    /* Changes the color of the grid background */
+    --ag-background-color: rgb(241, 247, 255);
+    /* Changes the header color of the top row */
+    --ag-header-background-color: rgb(228, 237, 250);
+    /* Changes the hover color of the row*/
+    --ag-row-hover-color: rgb(216, 226, 255);
+}
+
+.console-message.success {
+    color: darkgreen;
+}
+
+.console-message.failed,
+.console-message.error {
+    color: darkred;
+}
+
+.completed-rows {
+    background-color: #e0ffe0 !important;
+    /* Light green background */
+    color: #005500;
+    /* Dark green text */
+    font-weight: bold;
+}
+
+.swap-btn {
+    margin-left: 10px;
+    padding: 4px 10px;
+    background-color: rgb(255, 0, 0);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+}
+
+.file-browse-section {
+    border-radius: 10px;
+    margin: 10px 0;
+    -webkit-box-shadow: 0px 2px 18px -6px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 0px 2px 18px -6px rgba(0, 0, 0, 0.75);
+    box-shadow: 0px 2px 18px -6px rgba(0, 0, 0, 0.75);
+    flex: 0;
+}
+
+.file-state-components {
+    display: flex;
+    flex-direction: column;
+}
+
+.browse-text {
+    text-align: left;
+    margin-left: 20px;
+    font-size: 1.01rem !important;
+    font-weight: 600;
+    margin-bottom: 5vh;
+}
+
+.browse-selected-text {
+    margin-top: 5vh;
+    font-size: 1.01rem !important;
+}
+
+.export-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.export-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+
+.export-section .img-btn {
+    margin: 5px 10px;
+}
+
+.export-section .img-btn img,
+.single-data-view .img-btn img {
+    width: 30px;
+}
+
+.export-section-text {
+    font-size: 1rem !important;
+    margin-right: 20px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.single-data-view {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    border: solid 1px rgb(23, 150, 246);
+    border-radius: 5px;
+    padding: 0 5px;
+    margin-bottom: 5px;
+}
+
+.single-data-view input {
+    flex: 1;
+    border: none;
+    border-radius: 5px;
+}
+
+.img-btn{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.divider {
+    width: 3px;
+    background-color: rgb(23, 150, 246);
+    margin: 4px 0;
+}
+
+.swap-btn {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.invert {
+    filter: invert(100%);
+}
+
+.btn-sub-img {
+    width: 20px;
+}
+
+.btn-sub-img-height {
+    height: 15px;
+}
+
+.header-btn {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    min-height: 25px !important;
+}
+
+.ag-header-cell-label{
+    justify-content: center;
+}
+
+.start-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.start-container input{
+    width: 150px;
+}
+
+.ag-theme-quartz {
+    --ag-font-family:  Arial, Helvetica, sans-serif !important;
+}

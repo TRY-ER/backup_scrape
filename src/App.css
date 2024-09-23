@@ -1,0 +1,62 @@
+.App {
+  text-align: center;
+}
+
+.App p{
+  font-size: 0.8rem;
+}
+
+* {
+  transition: all ease 0.2s;
+}
+
+/* scrollbar setup */
+
+/* WebKit Browsers (Chrome, Safari, Edge) */
+* ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+* ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+* ::-webkit-scrollbar-thumb {
+    background-color: #888; /* Change scrollbar color */
+    border-radius: 10px;     /* Rounded scrollbar edges */
+    border: 3px solid #f1f1f1; /* Adds space around scrollbar */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker on hover */
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+/* Scrollbar for Edge and Internet Explorer */
+*::-ms-scrollbar {
+    width: 12px;
+    height: 12px;
+    background: #f1f1f1;
+}
+
+*::-ms-thumb {
+    background-color: #888;
+    border-radius: 10px;
+    border: 3px solid red;
+}
+
+/* Scrollbar for All Elements */
+body, * {
+    scrollbar-color: #888 #f1f1f1; /* For Firefox */
+    scrollbar-width: thin;         /* For Firefox */
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
