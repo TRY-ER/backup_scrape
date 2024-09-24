@@ -55,8 +55,9 @@ const SimpleBatchComponent = ({ activeContent }) => {
         {
             headerName: "S. No.",
             valueGetter: (params) => params.node.rowIndex + 1,
-            width: 80,
+            width: 50,
             cellStyle: { textAlign: "center" },
+            suppressSizeSizeToFit:true
         },
         { headerName: "Websites", field: "Websites" },
         { headerName: "Primary Email", field: "Primary Email" },
@@ -70,8 +71,7 @@ const SimpleBatchComponent = ({ activeContent }) => {
     const defaultColDef = useMemo(() => {
         return {
             editable: true,
-            flex: 1,
-            minWidth: 100,
+            resizable: true
         };
     }, []);
 
@@ -84,6 +84,7 @@ const SimpleBatchComponent = ({ activeContent }) => {
                 defaultColDef={defaultColDef}
                 animateRows={true}
                 columnHoverHighlight={true}
+                suppressColumnVirtualisation={true}
             />
         </div>
     </>)
