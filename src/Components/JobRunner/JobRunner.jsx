@@ -63,8 +63,8 @@ const SimpleBatchComponent = ({ activeContent }) => {
         { headerName: "Secondary Email", field: "Secondary Email" },
         { headerName: "Contact URL", field: "Contact URL" },
         { headerName: "Facebook URL", field: "Facebook URL" },
-        { headerName: "Primary URL", field: "Primary Email Source" },
-        { headerName: "Secondary URL", field: "Secondary Email Source" }
+        { headerName: "Primary Page", field: "Primary Page" },
+        { headerName: "Secondary Page", field: "Secondary Page" }
     ];
 
     const defaultColDef = useMemo(() => {
@@ -163,21 +163,19 @@ const RunContent = ({ masterShow,
         <div className="right-tab-main">
 
             {
-                runState === "init" || runState === "file" ?
-                    < FileHandlerComponent file={file} setFile={setFile} setRunState={setRunState} runState={runState} />
-                    : ""
+                < FileHandlerComponent file={file} setFile={setFile} setRunState={setRunState} runState={runState} />
             }
 
-            {runState === "file" &&
-                <>
-                    <div className="file-state-components">
-                        <p style={{ textAlign: "left" }}>Threads</p>
-                        <div className="start-container">
-                            <input value={NUM_THREADS} onChange={(e) => { SET_NUM_THREADS(e.target.value) }} type="number" />
-                        </div>
+            <>
+                <div className="file-state-components">
+                    <p style={{ textAlign: "left" }}>Threads</p>
+                    <div className="start-container">
+                        <input value={NUM_THREADS} onChange={(e) => { SET_NUM_THREADS(e.target.value) }} type="number"
+                            {...(runState !== "file" && { disabled: "disabled" })}
+                        />
                     </div>
-                </>
-            }
+                </div>
+            </>
             {headerErrorMessage !== '' && <p className="warn-text">{headerErrorMessage}</p>}
             <div className="number-status-section">
                 <div className="number-status-subsection" >
@@ -545,13 +543,23 @@ const FileHandlerComponent = ({ file, setFile, setRunState, runState }) => {
 
     useEffect(() => {
         if (file) {
+            console.log("file >>", file)
             analyzeFile(file);
             setFileViewState("file");
             if (runState === "init") {
                 setRunState('file');
             }
         }
+        if (file === null){
+            setFileViewState("init");
+        }
     }, [file])
+
+    useEffect(() => {
+        if (runState === "init") {
+            setFileViewState("init");
+        }
+    }, [runState])
 
 
     useEffect(() => {
@@ -596,7 +604,7 @@ const FileHandlerComponent = ({ file, setFile, setRunState, runState }) => {
     return (<>
         <div className="file-browse-section">
             <p className="browse-text">Browse</p>
-            <FileUploader file={file} setFile={setFile} error={error} setError={setError} />
+            <FileUploader file={file} setFile={setFile} error={error} setError={setError} runState={runState} />
             {fileViewState === "file" &&
                 <p className="browse-selected-text">Total Domain Selected ({numRows})</p>
             }
@@ -605,7 +613,7 @@ const FileHandlerComponent = ({ file, setFile, setRunState, runState }) => {
 }
 
 
-const JobRunner = ({ isBackendLive }) => {
+const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
     const { jobId } = useParams();
     const [tabMenu, setTabMenu] = useState("run");
     const [tab, setTab] = useState("control");
@@ -643,6 +651,10 @@ const JobRunner = ({ isBackendLive }) => {
     const [progressNum, setProgressNum] = useState(0);
     const [elapsedTime, setElapsedTime] = useState("0 Hr 0 Min 0sec");
     const [remainTime, setRemainTime] = useState("0 Hr 0 Min 0sec");
+
+    useEffect(() => {
+        setBackend(BASE_API_URL)
+    }, [])
 
 
     useEffect(() => {
@@ -813,8 +825,8 @@ const JobRunner = ({ isBackendLive }) => {
                         "Secondary Email": secondary_email,
                         "Contact URL": data.data.data.contact_us_url,
                         "Facebook URL": data.data.data.facebook_url,
-                        "Primary Email Source": primary_email_source,
-                        "Secondary Email Source": secondary_email_source,
+                        "Primary Page": primary_email_source,
+                        "Secondary Page": secondary_email_source,
                     }
                     return newItems;
                 })
@@ -829,6 +841,8 @@ const JobRunner = ({ isBackendLive }) => {
                         "Secondary Email": "Error",
                         "Contact URL": "Error",
                         "Facebook URL": "Error",
+                        "Primary Page": "Error",
+                        "Secondary Page": "Error",
                         "Scrapped": true,
                     }
                     return newItems;
@@ -887,313 +901,315 @@ const JobRunner = ({ isBackendLive }) => {
         }
     }
 
-const handleRun = () => {
-    const processItemsSequentially = async () => {
-        for (let index = 0; index < masterCpoint.length; index++) {
-            const item = masterCpoint[index];
-            console.log('checkpoint values >>', item, index);
-            const requestId = uuidv4();
-            const splitURLs = splitRemain(NUM_THREADS, item)
-            // setActiveBatchIndex(index);
-            startTimer();
-            await new Promise((resolve, reject) => {
-                const requestData = {
-                    "request_id": requestId,
-                    "data": {
-                        "batch": item.batch,
-                        "urls": splitURLs
+    const handleRun = () => {
+        const processItemsSequentially = async () => {
+            for (let index = 0; index < masterCpoint.length; index++) {
+                const item = masterCpoint[index];
+                console.log('checkpoint values >>', item, index);
+                const requestId = uuidv4();
+                const splitURLs = splitRemain(NUM_THREADS, item)
+                // setActiveBatchIndex(index);
+                startTimer();
+                await new Promise((resolve, reject) => {
+                    const requestData = {
+                        "request_id": requestId,
+                        "data": {
+                            "batch": item.batch,
+                            "urls": splitURLs
+                        }
+                    };
+
+                    // Send the request
+                    axios.post(`${BASE_API_URL}/stream_data/set_request/`, requestData)
+                        .then((res) => {
+                            console.log("setting request", res.data);
+                            addMessage(res.data);
+                            // setRunState("run");
+
+                            // Receive SSE event using the request_id
+                            const eventSource = new EventSource(`${BASE_API_URL}/stream_data/get_request/${requestData.request_id}/`);
+                            eventSourceRef.current = eventSource;
+                            eventSource.onmessage = (event) => {
+                                const data = JSON.parse(event.data);
+                                console.log("stream data>>", data);
+                                console.log("active content on message >>", activeContentRef.current)
+                                addMessage({ "type": data.type, "message": JSON.stringify(data) });
+                                modActiveContent(data);
+                            };
+
+                            eventSource.onerror = (error) => {
+                                console.error("EventSource failed: ", error);
+                                addMessage({ "type": "error", "message": "Failed to connect to stream." }, setMessages);
+                                console.log("active before csv >>", activeContentRef.current)
+                                // handleWriteCSV(jobId, index + 1, activeContentRef.current);
+                                eventSource.close();  // Close the connection on error
+                                resolve();  // Resolve promise to move to next iteration
+                            };
+
+                        }).catch((err) => {
+                            addMessage(err);
+                            reject(err);  // Reject the promise on error to prevent proceeding
+                        });
+                });
+                if (index === masterCpoint.length - 1) {
+                    pauseTimer();
+                }
+            }
+            setRunState("scrapped");
+        }
+
+        // Call the async function to start processing
+        processItemsSequentially();
+    }
+
+    useEffect(() => {
+        if (runState === "verify") {
+            axios.get(`${BASE_API_URL}/stream_data/ping`).then((res) => {
+                console.log("ping res >>", res)
+                if (res.data.message === 'end_point available') {
+                    const datares = window.fileSystem.readCSVFile(file.path)
+                    console.log("data res >>", datares)
+                    if (datares.success) {
+                        setMasterCpoint([{ batch: 0, data: datares.data }])
+                        setRunState("run");
                     }
-                };
-
-                // Send the request
-                axios.post(`${BASE_API_URL}/stream_data/set_request/`, requestData)
-                    .then((res) => {
-                        console.log("setting request", res.data);
-                        addMessage(res.data);
-                        // setRunState("run");
-
-                        // Receive SSE event using the request_id
-                        const eventSource = new EventSource(`${BASE_API_URL}/stream_data/get_request/${requestData.request_id}/`);
-                        eventSourceRef.current = eventSource;
-                        eventSource.onmessage = (event) => {
-                            const data = JSON.parse(event.data);
-                            console.log("stream data>>", data);
-                            console.log("active content on message >>", activeContentRef.current)
-                            addMessage({ "type": data.type, "message": JSON.stringify(data) });
-                            modActiveContent(data);
-                        };
-
-                        eventSource.onerror = (error) => {
-                            console.error("EventSource failed: ", error);
-                            addMessage({ "type": "error", "message": "Failed to connect to stream." }, setMessages);
-                            console.log("active before csv >>", activeContentRef.current)
-                            // handleWriteCSV(jobId, index + 1, activeContentRef.current);
-                            eventSource.close();  // Close the connection on error
-                            resolve();  // Resolve promise to move to next iteration
-                        };
-
-                    }).catch((err) => {
-                        addMessage(err);
-                        reject(err);  // Reject the promise on error to prevent proceeding
-                    });
-            });
-            if (index === masterCpoint.length - 1) {
-                pauseTimer();
-            }
-        }
-        setRunState("scrapped");
-    }
-
-    // Call the async function to start processing
-    processItemsSequentially();
-}
-
-useEffect(() => {
-    if (runState === "verify") {
-        axios.get(`${BASE_API_URL}/stream_data/ping`).then((res) => {
-            console.log("ping res >>", res)
-            if (res.data.message === 'end_point available') {
-                const datares = window.fileSystem.readCSVFile(file.path)
-                console.log("data res >>", datares)
-                if (datares.success) {
-                    setMasterCpoint([{ batch: 0, data: datares.data }])
-                    setRunState("run");
+                    else {
+                        setRunState("file");
+                        setFile(null);
+                        setHeaderErrorMessage("Make sure to keep 'Websites' as header and try again !")
+                    }
                 }
-                else {
-                    setRunState("file");
-                    setFile(null);
-                    setHeaderErrorMessage("Make sure to keep 'Websites' as header and try again !")
-                }
-            }
-        }).catch((err) => {
-            setRunState("init");
-            setHeaderErrorMessage("Endpoint for scrapping is unavailable !")
-        })
-
-    }
-    if (runState === "run") handleRun();
-    if (runState === "stopped") {
-        axios.get('http://localhost:8000/stream_data/stop_threads')
-            .then(response => {
-                console.log("Threads stopping response:", response.data);
-                eventSourceRef.current.close();
-                pauseTimer();
-                setRemainTime("0 Hr 0 Min 0 sec")
-                setTabMenu("run")
+            }).catch((err) => {
+                setRunState("init");
+                setHeaderErrorMessage("Endpoint for scrapping is unavailable !")
             })
-            .catch(error => {
-                console.error("Error stopping threads:", error);
-            });
-    }
-}, [runState])
-
-useEffect(() => {
-    console.log("active [mod] content >>", activeContent)
-}, [activeContent])
-
-const getValid = (activeContent) => {
-    const mod = []
-    activeContent.forEach((item) => {
-        if (item !== undefined) {
-            if (item["Websites"] !== "http://") {
-                mod.push({
-                    "Websites": item["Websites"],
-                    "Primary Email": item["Primary Email"],
-                    "Secondary Email": item["Secondary Email"],
-                    "Contact URL": item["Contact URL"],
-                    "Facebook URL": item["Facebook URL"],
-                    "Primary Email Source": item["Primary Email Source"],
-                    "Secondary Email Source": item["Secondary Email Source"]
+        }
+        if (runState === "run") handleRun();
+        if (runState === "stopped") {
+            axios.get(`${BASE_API_URL}/stream_data/stop_threads`)
+                .then(response => {
+                    console.log("Threads stopping response:", response.data);
+                    eventSourceRef.current.close();
+                    pauseTimer();
+                    setRemainTime("0 Hr 0 Min 0 sec")
+                    setTabMenu("run")
                 })
+                .catch(error => {
+                    console.error("Error stopping threads:", error);
+                });
+        }
+    }, [runState])
+
+    useEffect(() => {
+        console.log("active [mod] content >>", activeContent)
+    }, [activeContent])
+
+    const getValid = (activeContent) => {
+        const mod = []
+        activeContent.forEach((item) => {
+            if (item !== undefined) {
+                if (item["Websites"] !== "http://") {
+                    mod.push({
+                        "Websites": item["Websites"],
+                        "Primary Email": item["Primary Email"],
+                        "Secondary Email": item["Secondary Email"],
+                        "Contact URL": item["Contact URL"],
+                        "Facebook URL": item["Facebook URL"],
+                        "Primary Page": item["Primary Page"],
+                        "Secondary Page": item["Secondary Page"]
+                    })
+                }
+            }
+        })
+        return mod
+    }
+
+    const handleCSVExport = async () => {
+        if (runState === "scrapped" || runState === "stopped") {
+            const exportRes = await window.fileSystem.exportFile("csv", getValid(activeContent))
+            if (exportRes.success) {
+                console.log("export res >>", exportRes)
+            }
+            else {
+                alert(exportRes.error)
+            }
+
+        }
+    }
+
+    const handleXLSExport = async () => {
+        if (runState === "scrapped" || runState === "stopped") {
+            const exportRes = await window.fileSystem.exportFile("xlsx", getValid(activeContent))
+            if (exportRes.success) {
+                console.log("export res >>", exportRes)
+            }
+            else {
+                alert(exportRes.error)
             }
         }
-    })
-    return mod
-}
-
-const handleCSVExport = async () => {
-    if (runState === "scrapped" || runState === "stopped") {
-        const exportRes = await window.fileSystem.exportFile("csv", getValid(activeContent))
-        if (exportRes.success) {
-            console.log("export res >>", exportRes)
-        }
-        else {
-            alert(exportRes.error)
-        }
-
     }
-}
 
-const handleXLSExport = async () => {
-    if (runState === "scrapped" || runState === "stopped") {
-        const exportRes = await window.fileSystem.exportFile("xlsx", getValid(activeContent))
-        if (exportRes.success) {
-            console.log("export res >>", exportRes)
-        }
-        else {
-            alert(exportRes.error)
+    const handleStop = () => {
+        setTabMenu("stop")
+        if (runState === "run") {
+            setRunState("stopped")
         }
     }
-}
 
-const handleStop = () => {
-    setTabMenu("stop")
-    if (runState === "run") {
-        setRunState("stopped")
+
+    const handleClear = () => {
+        if (runState === "scrapped" || runState === "stopped") {
+            setTabMenu("clear")
+            setRunState("init")
+            setMasterShow({
+                urlProcessed: 0,
+                urlNotFound: 0,
+                primaryEmailFound: 0,
+                primaryEmailNotFound: 0,
+                secondaryEmailFound: 0,
+                secondaryEmailNotFound: 0,
+                facebookUrlFound: 0,
+                contactUrlFound: 0,
+                facebookUrlNotFound: 0,
+                overallExtractionEfficiency: 0,
+            })
+            setMasterCpoint([{ batch: 0, data: [] }])
+            setActiveContent([])
+            setFile(null)
+            setHeaderErrorMessage("")
+            setSeconds(0);
+            setElapsedTime("0 Hr 0 Min 0 Sec")
+            setRemainTime("0 Hr 0 Min 0 Sec")
+        }
     }
-}
 
-
-const handleClear = () => {
-    setTabMenu("clear")
-    setRunState("init")
-    setMasterShow({
-        urlProcessed: 0,
-        urlNotFound: 0,
-        primaryEmailFound: 0,
-        primaryEmailNotFound: 0,
-        secondaryEmailFound: 0,
-        secondaryEmailNotFound: 0,
-        facebookUrlFound: 0,
-        contactUrlFound: 0,
-        facebookUrlNotFound: 0,
-        overallExtractionEfficiency: 0,
-    })
-    setActiveContent([])
-    setFile(null)
-    setHeaderErrorMessage("")
-    setSeconds(0);
-    setElapsedTime("0 Hr 0 Min 0 Sec")
-    setRemainTime("0 Hr 0 Min 0 Sec")
-}
-
-const handleRunTabClick = () => {
-    setTabMenu("run")
-    if (runState === "file") {
-        setRunState("verify")
+    const handleRunTabClick = () => {
+        setTabMenu("run")
+        if (runState === "file") {
+            setRunState("verify")
+        }
     }
-}
 
 
-return (
-    <>
-        <div className="job-runner-container">
-            <div className="job-runner-main-container">
-                <div className="job-runner-left-container">
-                    <div className="job-batch-container">
-                        <BatchVerbose
-                            runState={runState}
-                            progressNum={masterShow.urlProcessed}
-                            maxNum={masterCpoint.length > 0 ? masterCpoint[0].data.length : 0}
-                            elapsedTime={elapsedTime}
-                            remainTime={remainTime}
-                            activeContent={activeContent}
-                        />
-                    </div>
-                </div>
-                {
-                    <div className="job-runner-right-container" style={showSideTab ? { display: "flex" } : { display: "none" }}>
-                        <div className="right-main-container">
-                            {
-                                tab === "control" &&
-                                <>
-                                    <>
-                                        <div className="right-component">
-                                            <div className="right-tabs">
-                                                <button style={tabMenu === "run" ? { backgroundColor: "green" } : {}} onClick={handleRunTabClick} className={`header-btn ${tabMenu === "run" ? "active" : ""}`}>
-                                                    <img src="Assets/Icons/play.png" className={`btn-sub-img-height ${tabMenu === "run" ? "invert" : ""}`} />
-                                                    Run</button>
-                                                {/* <button onClick={() => setTabMenu("pause")} className={`${tabMenu === "pause" ? "active" : ""}`}>Pause</button> */}
-                                                <button style={tabMenu === "stop" ? { backgroundColor: "red" } : {}} onClick={handleStop} className={`header-btn ${tabMenu === "stop" ? "active" : ""}`}>
-                                                    <img src="Assets/Icons/stop.png" className={`btn-sub-img-height ${tabMenu === "stop" ? "invert" : ""}`} />
-                                                    Stop</button>
-                                                <button style={tabMenu === "clear" ? { backgroundColor: "blue" } : {}} onClick={handleClear} className={`header-btn ${tabMenu === "clear" ? "active" : ""}`}>
-                                                    <img src="Assets/Icons/close.png" className={`btn-sub-img-height ${tabMenu === "clear" ? "invert" : ""}`} />
-                                                    Clear</button>
-                                            </div>
-                                        </div>
-                                    </>
-                                    <RunContent masterShow={masterShow}
-                                        file={file}
-                                        setFile={setFile}
-                                        runState={runState}
-                                        setRunState={setRunState}
-                                        masterCpoint={masterCpoint}
-                                        seconds={seconds}
-                                        setTabMenu={setTabMenu}
-                                        headerErrorMessage={headerErrorMessage}
-                                        showSideTab={showSideTab}
-                                        backend={backend}
-                                        setBackend={setBackend}
-                                        NUM_THREADS={NUM_THREADS}
-                                        SET_NUM_THREADS={SET_NUM_THREADS}
-                                        handleCSVExport={handleCSVExport}
-                                        handleXLSExport={handleXLSExport}
-                                        setMasterCpoint={setMasterCpoint}
-                                    />
-                                </>
-                            }
-                            {
-                                tab === "console" &&
-                                <ConsoleContent messages={messages} />
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
-            <div className="job-runner-bottom-container">
-                <div className="left-bottom-container">
-                    <div className="cr-container">
-                        <img src="/Assets/Logo.png" alt="" />
-                        <p className="cr-text">© 2023, CR Consultancy Services PVT LTD, All Rights Reserved</p>
-                    </div>
-                    <div className="tag-container">
-                        <div className="number-status-subsection" >
-                            <p className="section-number" >{masterShow.urlProcessed !== 0 ? (((masterShow.primaryEmailFound / masterShow.urlProcessed)) * 100).toFixed(1) : 0} %</p>
-                            <p className="section-text" >Primary Email Success Rate</p>
-                        </div>
-                        <div className="number-status-subsection">
-                            <p className="section-number">{masterShow.urlProcessed !== 0 ? ((masterShow.secondaryEmailFound / masterShow.urlProcessed) * 100).toFixed(1) : 0} %</p>
-                            <p className="section-text">Secondary Email Success Rate</p>
-                        </div>
-                        <div className="number-status-subsection">
-                            <p className="section-number">{masterShow.urlProcessed !== 0 ? ((masterShow.facebookUrlFound / masterShow.urlProcessed) * 100).toFixed(1) : 0} %</p>
-                            <p className="section-text">Facebook Page Success Rate</p>
-                        </div>
-                        <div className="number-status-subsection">
-                            <p className="section-number">{masterShow.urlProcessed !== 0 ? ((masterShow.contactUrlFound / masterShow.urlProcessed) * 100).toFixed(1) : 0} %</p>
-                            <p className="section-text">Contact Page Success Rate</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="status-container">
-                    <div >
-                        <button className="swap-btn"
-                            onClick={() => setShowSideTab(!showSideTab)}
-                        ><img src={`${showSideTab ? "Assets/Icons/hide.png" : "Assets/Icons/show.png"}`} className="btn-sub-img invert" />{showSideTab ? "Hide" : "Show"}</button>
-                    </div>
-                    <div className="pane-container">
-                        <div className="tab-logo-container">
-                            <img src="Assets/control.png" alt="logo"
-                                className={`tab-logo ${tab === "control" ? "tab-active" : ""}`}
-                                onClick={() => {
-                                    setTab("control")
-                                    setShowSideTab(true);
-                                }} />
-                            <img src="Assets/console.png" alt="logo"
-                                className={`tab-logo ${tab === "console" ? "tab-active" : ""}`}
-                                onClick={() => {
-                                    setTab("console")
-                                    setShowSideTab(true);
-                                }}
+    return (
+        <>
+            <div className="job-runner-container">
+                <div className="job-runner-main-container">
+                    <div className="job-runner-left-container">
+                        <div className="job-batch-container">
+                            <BatchVerbose
+                                runState={runState}
+                                progressNum={masterShow.urlProcessed}
+                                maxNum={masterCpoint.length > 0 ? masterCpoint[0].data.length : 0}
+                                elapsedTime={elapsedTime}
+                                remainTime={remainTime}
+                                activeContent={activeContent}
                             />
                         </div>
                     </div>
+                    {
+                        <div className="job-runner-right-container" style={showSideTab ? { display: "flex" } : { display: "none" }}>
+                            <div className="right-main-container">
+                                {
+                                    tab === "control" &&
+                                    <>
+                                        <>
+                                            <div className="right-component">
+                                                <div className="right-tabs">
+                                                    <button style={tabMenu === "run" ? { backgroundColor: "green" } : {}} onClick={handleRunTabClick} className={`header-btn ${tabMenu === "run" ? "active" : ""}`}>
+                                                        <img src="Assets/Icons/play.png" className={`btn-sub-img-height ${tabMenu === "run" ? "invert" : ""}`} />
+                                                        Run</button>
+                                                    {/* <button onClick={() => setTabMenu("pause")} className={`${tabMenu === "pause" ? "active" : ""}`}>Pause</button> */}
+                                                    <button style={tabMenu === "stop" ? { backgroundColor: "red" } : {}} onClick={handleStop} className={`header-btn ${tabMenu === "stop" ? "active" : ""}`}>
+                                                        <img src="Assets/Icons/stop.png" className={`btn-sub-img-height ${tabMenu === "stop" ? "invert" : ""}`} />
+                                                        Stop</button>
+                                                    <button style={tabMenu === "clear" ? { backgroundColor: "blue" } : {}} onClick={handleClear} className={`header-btn ${tabMenu === "clear" ? "active" : ""}`}>
+                                                        <img src="Assets/Icons/close.png" className={`btn-sub-img-height ${tabMenu === "clear" ? "invert" : ""}`} />
+                                                        Clear</button>
+                                                </div>
+                                            </div>
+                                        </>
+                                        <RunContent masterShow={masterShow}
+                                            file={file}
+                                            setFile={setFile}
+                                            runState={runState}
+                                            setRunState={setRunState}
+                                            masterCpoint={masterCpoint}
+                                            seconds={seconds}
+                                            setTabMenu={setTabMenu}
+                                            headerErrorMessage={headerErrorMessage}
+                                            showSideTab={showSideTab}
+                                            backend={backend}
+                                            setBackend={setBackend}
+                                            NUM_THREADS={NUM_THREADS}
+                                            SET_NUM_THREADS={SET_NUM_THREADS}
+                                            handleCSVExport={handleCSVExport}
+                                            handleXLSExport={handleXLSExport}
+                                            setMasterCpoint={setMasterCpoint}
+                                        />
+                                    </>
+                                }
+                                {
+                                    tab === "console" &&
+                                    <ConsoleContent messages={messages} />
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div className="job-runner-bottom-container">
+                    <div className="left-bottom-container">
+                        <div className="cr-container">
+                            <img src="Assets/Logo.png" alt="" />
+                            <p className="cr-text">© 2023, CR Consultancy Services PVT LTD, All Rights Reserved</p>
+                        </div>
+                        <div className="tag-container">
+                            <div className="number-status-subsection" >
+                                <p className="section-number" >{masterShow.urlProcessed !== 0 ? (((masterShow.primaryEmailFound / masterShow.urlProcessed)) * 100).toFixed(1) : 0} %</p>
+                                <p className="section-text" >Primary Email Success Rate</p>
+                            </div>
+                            <div className="number-status-subsection">
+                                <p className="section-number">{masterShow.urlProcessed !== 0 ? ((masterShow.secondaryEmailFound / masterShow.urlProcessed) * 100).toFixed(1) : 0} %</p>
+                                <p className="section-text">Secondary Email Success Rate</p>
+                            </div>
+                            <div className="number-status-subsection">
+                                <p className="section-number">{masterShow.urlProcessed !== 0 ? ((masterShow.facebookUrlFound / masterShow.urlProcessed) * 100).toFixed(1) : 0} %</p>
+                                <p className="section-text">Facebook Page Success Rate</p>
+                            </div>
+                            <div className="number-status-subsection">
+                                <p className="section-number">{masterShow.urlProcessed !== 0 ? ((masterShow.contactUrlFound / masterShow.urlProcessed) * 100).toFixed(1) : 0} %</p>
+                                <p className="section-text">Contact Page Success Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="status-container">
+                        <div >
+                            <button className="swap-btn"
+                                onClick={() => setShowSideTab(!showSideTab)}
+                            ><img src={`${showSideTab ? "Assets/Icons/hide.png" : "Assets/Icons/show.png"}`} className="btn-sub-img invert" />{showSideTab ? "Hide" : "Show"}</button>
+                        </div>
+                        <div className="pane-container">
+                            <div className="tab-logo-container">
+                                <img src="Assets/control.png" alt="logo"
+                                    className={`tab-logo ${tab === "control" ? "tab-active" : ""}`}
+                                    onClick={() => {
+                                        setTab("control")
+                                        setShowSideTab(true);
+                                    }} />
+                                <img src="Assets/console.png" alt="logo"
+                                    className={`tab-logo ${tab === "console" ? "tab-active" : ""}`}
+                                    onClick={() => {
+                                        setTab("console")
+                                        setShowSideTab(true);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </>
-)
+        </>
+    )
 }
 
 export default JobRunner;

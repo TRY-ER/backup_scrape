@@ -1,28 +1,34 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./CreateJobPage.css";
 
-function FileUploader({ file, setFile, error, setError }) {
+function FileUploader({ file, setFile, error, setError, runState }) {
 
     const handleFileSelect = (e) => {
-        const selectedFile = e.target.files[0];
-        if (validateFile(selectedFile)) {
-            setFile(selectedFile);
-            setError("");
-        } else {
-            setFile(null);
-            setError("Invalid file type. Only .csv and .xlsx files are allowed.");
+        console.log("this is getting executed !!")
+        if (runState === "file" || runState === "init") {
+            const selectedFile = e.target.files[0];
+            console.log("selected file", selectedFile)
+            if (validateFile(selectedFile)) {
+                setFile(selectedFile);
+                setError("");
+            } else {
+                setFile(null);
+                setError("Invalid file type. Only .csv and .xlsx files are allowed.");
+            }
         }
     };
 
     const handleDrop = (e) => {
-        e.preventDefault();
-        const droppedFile = e.dataTransfer.files[0];
-        if (validateFile(droppedFile)) {
-            setFile(droppedFile);
-            setError("");
-        } else {
-            setFile(null);
-            setError("Invalid file type. Only .csv and .xlsx files are allowed.");
+        if (runState === "file" || runState === "init") {
+            e.preventDefault();
+            const droppedFile = e.dataTransfer.files[0];
+            if (validateFile(droppedFile)) {
+                setFile(droppedFile);
+                setError("");
+            } else {
+                setFile(null);
+                setError("Invalid file type. Only .csv and .xlsx files are allowed.");
+            }
         }
     };
 
@@ -54,6 +60,7 @@ function FileUploader({ file, setFile, error, setError }) {
                 onChange={handleFileSelect}
                 style={{ display: "none" }}
                 id="fileInput"
+                disabled={runState !== "file" && runState !== "init"}
             />
             <label
                 htmlFor="fileInput"
@@ -73,4 +80,4 @@ function FileUploader({ file, setFile, error, setError }) {
     );
 }
 
-export {FileUploader};
+export { FileUploader };

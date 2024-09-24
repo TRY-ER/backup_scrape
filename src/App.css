@@ -60,3 +60,7 @@ body, * {
 body {
     font-family: Arial, Helvetica, sans-serif !important;
 }
+
+input:focus{
+    outline: none !important;
+}
