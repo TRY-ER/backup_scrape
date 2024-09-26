@@ -55,25 +55,27 @@ const SimpleBatchComponent = ({ activeContent }) => {
         {
             headerName: "S. No.",
             valueGetter: (params) => params.node.rowIndex + 1,
-            width: 50,
-            cellStyle: { textAlign: "center" },
-            suppressSizeSizeToFit:true
+            width: 80, // Set an initial width
+            suppressAutoSize: true, // Prevents the column from auto-sizing
+            suppressSizeToFit: true, // Prevents resizing to fit
         },
-        { headerName: "Websites", field: "Websites" },
-        { headerName: "Primary Email", field: "Primary Email" },
-        { headerName: "Secondary Email", field: "Secondary Email" },
-        { headerName: "Contact URL", field: "Contact URL" },
-        { headerName: "Facebook URL", field: "Facebook URL" },
-        { headerName: "Primary Page", field: "Primary Page" },
-        { headerName: "Secondary Page", field: "Secondary Page" }
+        { headerName: "Websites", field: "Websites", cellStyle: { textAlign: "left" } },
+        { headerName: "Primary Email", field: "Primary Email", cellStyle: { textAlign: "left" } },
+        { headerName: "Secondary Email", field: "Secondary Email", cellStyle: { textAlign: "left" } },
+        { headerName: "Contact URL", field: "Contact URL", cellStyle: { textAlign: "left" } },
+        { headerName: "Facebook URL", field: "Facebook URL", cellStyle: { textAlign: "left" } },
+        { headerName: "Primary Page", field: "Primary Page", cellStyle: { textAlign: "left" } },
+        { headerName: "Secondary Page", field: "Secondary Page", cellStyle: { textAlign: "left" } }
     ];
 
     const defaultColDef = useMemo(() => {
         return {
             editable: true,
-            resizable: true
+            resizable: true,
+            autoSizeAllColumns: true
         };
     }, []);
+
 
     return (<>
         <div className={"ag-theme-quartz batch-tray"}>
@@ -85,6 +87,7 @@ const SimpleBatchComponent = ({ activeContent }) => {
                 animateRows={true}
                 columnHoverHighlight={true}
                 suppressColumnVirtualisation={true}
+            // onGridReady={onGridReady}
             />
         </div>
     </>)
@@ -210,12 +213,13 @@ const RunContent = ({ masterShow,
                         <img src="Assets/Icons/export.png" style={{ width: "25px" }}></img>
                     </div>
                     <p className="export-section-text"><span style={{ textDecoration: "underline" }}>E</span>XPORT</p>
-                    <div className="img-btn">
+                    <div className="img-btn" style={{ cursor: "pointer" }}>
                         <img src="Assets/Icons/csv.png"
                             onClick={handleCSVExport}
                         ></img>
                     </div>
                     <div className="img-btn"
+                        style={{ cursor: "pointer" }}
                         onClick={handleXLSExport}
                     >
                         <img src="Assets/Icons/xls.png"></img>
@@ -551,7 +555,7 @@ const FileHandlerComponent = ({ file, setFile, setRunState, runState }) => {
                 setRunState('file');
             }
         }
-        if (file === null){
+        if (file === null) {
             setFileViewState("init");
         }
     }, [file])
@@ -797,7 +801,7 @@ const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
                     }
                 })
                 setActiveContent((prevContent) => {
-                    const newItems = [...prevContent];
+                    var newItems = [...prevContent];
                     var primary_email = ""
                     var primary_email_source = ""
                     var secondary_email = ""
@@ -819,8 +823,8 @@ const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
 
                     console.log("modified emails w add >>", primary_email, secondary_email, primary_email_source, secondary_email_source)
 
-                    newItems[id] = {
-                        ...newItems[id],
+                    newItems = [...newItems, {
+                        // ...newItems[id],
                         "Websites": data.data.data.website,
                         "Primary Email": primary_email,
                         "Secondary Email": secondary_email,
@@ -828,7 +832,7 @@ const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
                         "Facebook URL": data.data.data.facebook_url,
                         "Primary Page": primary_email_source,
                         "Secondary Page": secondary_email_source,
-                    }
+                    }]
                     return newItems;
                 })
                 console.log(activeContent);
@@ -1124,9 +1128,14 @@ const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
                                                     <button style={tabMenu === "stop" ? { backgroundColor: "red" } : {}} onClick={handleStop} className={`header-btn ${tabMenu === "stop" ? "active" : ""}`}>
                                                         <img src="Assets/Icons/stop.png" className={`btn-sub-img-height ${tabMenu === "stop" ? "invert" : ""}`} />
                                                         Stop</button>
-                                                    <button style={tabMenu === "clear" ? { backgroundColor: "blue" } : {}} onClick={handleClear} className={`header-btn ${tabMenu === "clear" ? "active" : ""}`}>
-                                                        <img src="Assets/Icons/close.png" className={`btn-sub-img-height ${tabMenu === "clear" ? "invert" : ""}`} />
-                                                        Clear</button>
+                                                    {
+                                                        <button style={tabMenu === "clear" ? { backgroundColor: "blue" } : {}} onClick={handleClear} className={`header-btn ${tabMenu === "clear" ? "active" : ""}`}
+                                                            disabled={(runState === "scrapped" || runState === "stopped") ? "" : "disabled"}
+                                                        >
+                                                            <img src="Assets/Icons/close.png" className={`btn-sub-img-height ${tabMenu === "clear" ? "invert" : ""}`} />
+                                                            Clear</button>
+
+                                                    }
                                                 </div>
                                             </div>
                                         </>
@@ -1162,7 +1171,7 @@ const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
                     <div className="left-bottom-container">
                         <div className="cr-container">
                             <img src="Assets/Logo.png" alt="" />
-                            <p className="cr-text">© 2023, CR Consultancy Services PVT LTD, All Rights Reserved</p>
+                            <p className="cr-text">© 2023, CR Consultancy Services PVT LTD</p>
                         </div>
                         <div className="tag-container">
                             <div className="number-status-subsection" >

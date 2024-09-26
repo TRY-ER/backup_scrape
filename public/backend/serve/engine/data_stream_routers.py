@@ -84,6 +84,9 @@ def process(data):
         if stop_threads:
             print("Stop thread is true >>>>!")
             break
+        else:
+            ...
+            # print("stop threads >>", stop_threads)
         try:
             yield output_queue.get(timeout=0)
 

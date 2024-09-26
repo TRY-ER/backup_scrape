@@ -1,8 +1,9 @@
 {
-  "name": "frontend",
+  "name": "CRLLC Primary Email Scrapper",
   "version": "0.1.0",
   "private": true,
   "main": "public/electron.js",
+  "author": "CRLLC",
   "dependencies": {
     "@electron/remote": "^2.1.2",
     "@testing-library/jest-dom": "^5.17.0",
@@ -79,11 +80,11 @@
       "target": [
         "AppImage"
       ],
-      "icon": "public/icon512.png"
+      "icon": "public/logo.jpg"
     },
     "win": {
       "target": "nsis",
-      "icon": "public/icon512.png"
+      "icon": "public/logo.jpg"
     }
   }
 }

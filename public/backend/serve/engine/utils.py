@@ -959,7 +959,7 @@ def find_tt_links(driver, return_paths=False, return_contact = False):
     return text.trim();
     """, body_element)
 
-    print("vis >>", visible_text_content)
+    # print("vis >>", visible_text_content)
     # print("visible text content >>", visible_text_content)
     # print("visible text content mod >>", visible_text_content_mod)
 
@@ -970,7 +970,7 @@ def find_tt_links(driver, return_paths=False, return_contact = False):
 
         # If there are more than 2 input fields or forms, assume it's a contact page
         if len(input_fields) > 2 or len(forms) > 1:
-            print("This could be a valid contact page:", driver.current_url)
+            # print("This could be a valid contact page:", driver.current_url)
             if return_paths:
                 return visible_text_content, facebook_urls, hrefs, list(set(mail_to_emails)), driver.current_url 
             return visible_text_content, facebook_urls, list(set(mail_to_emails)), driver.current_url 
@@ -987,7 +987,7 @@ def find_tt_links(driver, return_paths=False, return_contact = False):
 
 @measure_time
 def filter_addresses(paths, include_all_pages=False):
-    print('paths >>', paths)
+    # print('paths >>', paths)
     triger_strs = path_keywords
     matched = []
     unmatched = []
@@ -1009,7 +1009,7 @@ def iter_sub_paths(url, driver, prev_emails: list, paths, include_all_pages,
     all_paths = get_all_paths(base_url=url, paths=paths)
     # print("all paths >>", all_paths)
     matched, unmatched = filter_addresses(all_paths, include_all_pages)
-    print("matched>>", matched)
+    # print("matched>>", matched)
     facebook_urls = []
     contact_us_url = ""
 
@@ -1085,6 +1085,7 @@ def get_req_data(chrome_headless,
     try:
         get_url(chrome_headless, url)
         time.sleep(3)
+        print(url)
         WebDriverWait(
             chrome_headless,
             MAX_WAIT_TIME).until(lambda driver: chrome_headless.execute_script(

@@ -6,7 +6,7 @@ import JobRunner from './Components/JobRunner/JobRunner';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const BASE_API_URL = "http://127.0.0.1:9999"; 
+const BASE_API_URL = "http://127.0.0.1:6993"; 
 const MAX_NUM_THREAD = 6;
 
 function zip(list1, list2) {

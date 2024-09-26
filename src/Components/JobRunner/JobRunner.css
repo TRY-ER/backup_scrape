@@ -180,6 +180,7 @@
 .section-number {
     font-size: 0.9rem !important;
     font-weight: 800;
+    text-align: center !important;
 }
 
 .job-runner-bottom-container .section-text {
@@ -187,7 +188,7 @@
 }
 
 .cr-text {
-    font-size: 0.6rem !important;
+    font-size: 0.9 rem !important;
 }
 
 .job-runner-bottom-container .left-bottom-container {
@@ -567,10 +568,9 @@
 }
 
 .export-section-text {
-    font-size: 1rem !important;
+    font-size: 0.8rem !important;
     margin-right: 20px;
     font-weight: 800;
-    cursor: pointer;
 }
 
 .single-data-view {
