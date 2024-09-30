@@ -196,7 +196,7 @@ async function checkIfServerIsRunning() {
 
 // Start FastAPI backend Docker container
 async function startFastAPIServer() {
-  const dockerImageName = 'backend_image'; // Replace with your Docker image name
+  const dockerImageName = 'backend_image_6993'; // Replace with your Docker image name
   const dockerContainerName = 'scrapping-backend-6993';
 
   const isRunning = await checkIfServerIsRunning();

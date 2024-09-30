@@ -779,7 +779,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 
 MAX_RETRIES = 2
 DISABLE_TIME_LOG = True 
-MAX_WAIT_TIME = 30
+MAX_WAIT_TIME = 40
 MAX_WAIT_TIME_NESTED = 30
 
 
@@ -844,7 +844,8 @@ def clean_full_urls(url):
 
 def compare_start(base_url, url):
     base_url = clean_full_urls(base_url)
-    if (url.startswith("http://"+base_url) or url.startswith("https://"+base_url)):
+    comparable = base_url.split(".")[0]+"."
+    if comparable in url and len(url) < 50:
         return True
     return False
 
@@ -985,6 +986,18 @@ def find_tt_links(driver, return_paths=False, return_contact = False):
     return visible_text_content, facebook_urls, list(set(mail_to_emails))
 
 
+def sort_address(matched):
+    sorted = []
+    for match in matched:
+        if "contact" in match:
+            sorted.insert(0, match)
+        elif "about" in match:
+            sorted.insert(1, match)
+        else:
+            sorted.append(match)
+    return sorted 
+
+
 @measure_time
 def filter_addresses(paths, include_all_pages=False):
     # print('paths >>', paths)
@@ -998,7 +1011,8 @@ def filter_addresses(paths, include_all_pages=False):
             matched.append(path)
         else:
             unmatched.append(path)
-    return matched, unmatched
+    matched_sort = sort_address(matched)
+    return matched_sort, unmatched
 
 
 @measure_time
@@ -1014,8 +1028,10 @@ def iter_sub_paths(url, driver, prev_emails: list, paths, include_all_pages,
     contact_us_url = ""
 
     for path in matched:
-
-        driver.get(form_url(path))
+        exe_path = form_url(path)
+        driver.get(exe_path)
+        # print(exe_path)
+        # print("formrl()")
         WebDriverWait(
             driver,
             MAX_WAIT_TIME_NESTED).until(lambda driver: driver.execute_script(
@@ -1085,7 +1101,7 @@ def get_req_data(chrome_headless,
     try:
         get_url(chrome_headless, url)
         time.sleep(3)
-        print(url)
+        # print(url)
         WebDriverWait(
             chrome_headless,
             MAX_WAIT_TIME).until(lambda driver: chrome_headless.execute_script(

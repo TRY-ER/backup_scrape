@@ -17,7 +17,7 @@ stop_threads = False
 
 data_store = {}
 
-def run(site_repo, output_queue, batch, t):
+def run(site_repo, output_queue, batch, t, include_all_pages, include_all_emails):
     chrome_headless = generate_driver()
     o_df_index = list(site_repo.keys())
     o_df_value = list(site_repo.values())
@@ -36,7 +36,7 @@ def run(site_repo, output_queue, batch, t):
             contact_us_url = ""
             try:
                 primary_email, secondary_email, facebook_url, contact_us_url = get_req_data(
-                    chrome_headless, form_url(value), include_all_pages=INCLUDE_ALL_PAGES, include_mail_to=INCLUDE_MAIL_TO)
+                    chrome_headless, form_url(value), include_all_pages=include_all_pages, include_mail_to=include_all_emails)
             except Exception as e:
                 output_queue.put(
                     f"data: {json.dumps({'type': 'error', 'message': str(e), 'id': f'{str(index)}', 'batch': str(batch), 'thread': str(t)})}\n\n"
@@ -64,7 +64,7 @@ def run(site_repo, output_queue, batch, t):
         chrome_headless.quit()
 
 
-def process(data):
+def process(data, include_all_pages, include_all_emails):
     # o_df = read_form_source_excel("./File 54.xlsx")
     global stop_threads
     site_repo = data["urls"]
@@ -74,7 +74,7 @@ def process(data):
 
     for i, t in enumerate(site_repo.keys()):
         thread = Thread(target=run,
-                        args=(site_repo[t], output_queue, batch, t))
+                        args=(site_repo[t], output_queue, batch, t, include_all_pages, include_all_emails))
         threads.append(thread)
         thread.start()
 
@@ -144,7 +144,7 @@ async def get_request(request_id: str):
     try:
         data = load_request(request_id)
         print('data >>',data)
-        pro_data = process(data["data"])
+        pro_data = process(data["data"], data["include_all_pages"], data["include_all_emails"])
         # del data_store[request_id]
         stop_threads = False
         return StreamingResponse(pro_data, media_type="text/event-stream")

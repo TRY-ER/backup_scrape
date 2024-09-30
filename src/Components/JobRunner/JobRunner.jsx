@@ -212,7 +212,6 @@ const RunContent = ({ masterShow,
                     <div className="img-btn">
                         <img src="Assets/Icons/export.png" style={{ width: "25px" }}></img>
                     </div>
-                    <p className="export-section-text"><span style={{ textDecoration: "underline" }}>E</span>XPORT</p>
                     <div className="img-btn" style={{ cursor: "pointer" }}>
                         <img src="Assets/Icons/csv.png"
                             onClick={handleCSVExport}
@@ -236,7 +235,7 @@ const RunContent = ({ masterShow,
                     <div className="img-btn"
                         onClick={() => { singleDataViewClick(singleDataSite) }}
                     >
-                        <img src="Assets/Icons/arrow.png" style={{ width: "20px", margin: "5px" }}></img>
+                        <img src="Assets/Icons/arrow.png" style={{ width: "20px", margin: "5px", cursor: "pointer"}}></img>
                     </div>
                 </div>
 
@@ -921,7 +920,9 @@ const JobRunner = ({ isBackendLive, BASE_API_URL }) => {
                         "data": {
                             "batch": item.batch,
                             "urls": splitURLs
-                        }
+                        },
+                        "include_all_pages": false,
+                        "include_all_emails": true,
                     };
 
                     // Send the request
